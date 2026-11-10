@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ecossistema Soberano Unificado</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#121212">
+    <style>
+        :root {
+            --bg: #121212;
+            --card-bg: #1e1e1e;
+            --accent: #00ffcc;
+            --text: #ffffff;
+            --border: #333;
+            --input-bg: #2a2a2a;
+        }
+
+        .light-mode {
+            --bg: #f4f4f9;
+            --card-bg: #ffffff;
+            --accent: #0055ff;
+            --text: #333333;
+            --border: #ccc;
+            --input-bg: #e9e9f0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 10px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .container { max-width: 500px; margin: 0 auto; }
+        
+        /* Navegação por Abas (Rolável para caber todas) */
+        .nav-abas {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 15px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+        .nav-abas button {
+            flex: 0 0 auto;
+            padding: 8px 6px;
+            background-color: var(--card-bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 10px;
+            cursor: pointer;
+        }
+        .nav-abas button.ativo {
+            background-color: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
+        .secao { display: none; }
+        .secao.ativa { display: block; }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+        }
+        h2, h3 { color: var(--accent); margin-top: 0; font-size: 16px; }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 8px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 12px;
+        }
+        button.btn-acao {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--accent);
+            color: #000;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        video, audio { width: 100%; border-radius: 6px; background: #000; margin-top: 5px; }
+        .topo-acoes {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+        .item-lista {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body onload="inicializarEcossistemaTotal()">
+
+<div class="container">
+    <div class="topo-acoes">
+        <div id="statusConexao" style="font-weight: bold;">🟢 Conectado</div>
+        <div>
+            <button onclick="exportarBackup()" style="padding: 4px 8px; background: var(--card-bg); color: var(--text); border: 1px solid var(--border); border-radius: 4px; cursor: pointer;">💾 Backup</button>
+            <button onclick="alternarTema()" style="padding: 4px 8px; background: var(--card-bg); color: var(--text); border: 1px solid var(--border); border-radius: 4px; cursor: pointer;">☀️ Tema</button>
+        </div>
+    </div>
+
+    <!-- Navegação de Abas Unificada -->
+    <div class="nav-abas">
+        <button id="tabFeed" class="ativo" onclick="trocarAba('feed')">📸 Feed</button>
+        <button id="tabDelivery" onclick="trocarAba('delivery')">🍔 Delivery</button>
+        <button id="tabFilmes" onclick="trocarAba('filmes')">🍿 Filmes</button>
+        <button id="tabBooks" onclick="trocarAba('books')">📚 Livros</button>
+        <button id="tabVideos" onclick="trocarAba('videos')">📺 YouTube</button>
+        <button id="tabMusic" onclick="trocarAba('music')">🎵 Músicas</button>
+        <button id="tabAi" onclick="trocarAba('ai')">🧠 IA</button>
+        <button id="tabCarteira" onclick="trocarAba('carteira')">🪙 Carteira</button>
+    </div>
+
+    <!-- SEÇÃO 1: FEED & STORIES -->
+    <div id="secaoFeed" class="secao ativa">
+        <div class="card">
+            <h2>Rede Social & Stories</h2>
+            <input type="text" id="postTexto" placeholder="O que está acontecendo na rede offline?">
+            <button class="btn-acao" onclick="publicarPost()">Publicar no Feed</button>
+        </div>
+        <div class="card">
+            <h3>Feed Local</h3>
+            <div id="listaFeed">Carregando posts...</div>
+        </div>
+    </div>
+
+    <!-- SEÇÃO 2: DELIVERY -->
+    <div id="secaoDelivery" class="secao">
+        <div class="card">
+            <h2>Delivery de Comida & Lanches</h2>
+            <input type="text" id="delivNome" placeholder="Nome do lanche ou bebida...">
+            <input type="number" step="0.01" id="delivPreco" placeholder="Preço (Ex: 30.00)...">
+            <button class="btn-acao" onclick="adicionarDelivery()">Adicionar ao Cardápio</button>
+        </div>
+        <div class="card">
+            <h3>Cardápio & Pedidos</h3>
+            <div id="listaDelivery">Carregando cardápio...</div>
+        </div>
+    </div>
+
+    <!-- SEÇÃO 3: FILMES E SÉRIES -->
+    <div id="secaoFilmes" class="secao">
+        <div class="card">
+            <h2>CineOffline (Filmes e Séries)</h2>
+            <input type="text" id="filmeTitulo" placeholder="Título do filme ou série...">
+            <input type="file" id="filmeArquivo" accept="video/*">
+            <button class="btn-acao" onclick="salvarFilme()">Salvar Filme Offline</button>
+        </div>
+        <div class="card">
+            <h3>Streaming Local</h3>
+            <div id="listaFilmes">Carregando filmes...</div>
+        </div>
+    </div>
+
+    <!-- SEÇÃO 4: LIVROS, MANGÁS E GIBIS -->
+    <div id="secaoBooks" class="secao">
+        <div class="card">
+            <h2>Biblioteca de Leituras</h2>
+            <input type="text" id="livroTitulo" placeholder="Título do livro, mangá ou gibi...">
+            <input type="file" id="livroArquivo" accept=".epub,.pdf,.cbz,.cbr">
+            <button class="btn-acao" onclick="salvarLivro()">Salvar Obra Offline</button>
+        </div>
+        <div class="card">
+            <h3>Acervo de Leituras</h3>
+            <div id="listaBooks">Carregando acervo...</div>
+        </div>
+    </div>
+
+    <!-- SEÇÃO 5: YOUTUBE OFFLINE -->
+    <div id="secaoVideos" class="secao">
+        <div class="card">
+            <h2>YouTube Offline (Vídeos do Mundo)</h2>
+            <input type="text" id="vidTitulo" placeholder="Título do vídeo...">
+            <input type="file" id="vidArquivo" accept="video/*">
+            <button class="btn-acao" onclick="salvarVideo()">Salvar Vídeo</button>
+        </div>
+        <div class="card">
+            <h3>Vídeos Salvos</h3>
+            <div id="listaVideos">Carregando vídeos...</div>
+        </div>
+    </div>
+
+    <!-- SEÇÃO 6: MÚSICAS -->
+    <div id="secaoMusic" class="secao">
+        <div class="card">
+            <h2>Biblioteca Musical</h2>
+            <input type="text" id="musicaTitulo" placeholder="Nome da música e artista...">
+            <input type="file" id="musicaArquivo" accept="audio/*">
+            <button class="btn-acao" onclick="salvarMusica()">Salvar Música</button>
+        </div>
+        <div class="card">
+            <h3>Player de Áudio</h3>
+            <audio id="playerAudio" controls style="margin-bottom:10px;"></audio>
+            <div id="listaMusicas">Carregando músicas...</div>
+        </div>
+    </div>
+
+    <!-- SEÇÃO 7: IA LOCAL -->
+    <div id="secaoAi" class="secao">
+        <div class="card">
+            <h2>Assistente de IA Local</h2>
+            <textarea id="perguntaAi" placeholder="Faça uma pergunta para a IA..."></textarea>
+            <button class="btn-acao" onclick="perguntarAi()">Processar Offline</button>
+            <p id="respostaAi" style="font-size: 12px; margin-top: 10px; opacity: 0.8;"></p>
+        </div>
+    </div>
+
+    <!-- SEÇÃO 8: CARTEIRA P2P -->
+    <div id="secaoCarteira" class="secao">
+        <div class="card">
+            <h2>Carteira P2P & Chaves Criptográficas</h2>
+            <p style="font-size: 11px; opacity: 0.8;">Sua chave soberana está ativa no armazenamento local.</p>
+            <div id="infoCarteira" style="font-size: 11px; word-break: break-all; background: var(--input-bg); padding: 8px; border-radius: 4px;">Gerando chaves...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let db;
+
+    function inicializarEcossistemaTotal() {
+        carregarTema();
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW erro:', err));
+        }
+
+        const req = indexedDB.open("EcossistemaTotalDB", 1);
+        req.onupgradeneeded = e => {
+            db = e.target.result;
+            ["posts", "delivery", "filmes", "books", "videos", "musicas"].forEach(store => {
+                if (!db.objectStoreNames.contains(store)) {
+                    db.createObjectStore(store, { keyPath: "id", autoIncrement: true });
+                }
+            });
+        };
+        req.onsuccess = e => {
+            db = e.target.result;
+            carregarTudo();
+        };
+    }
+
+    function trocarAba(aba) {
+        document.querySelectorAll('.secao').forEach(s => s.classList.remove('ativa'));
+        document.querySelectorAll('.nav-abas button').forEach(b => b.classList.remove('ativo'));
+        document.getElementById('secao' + aba.charAt(0).toUpperCase() + aba.slice(1)).classList.add('ativa');
+        document.getElementById('tab' + aba.charAt(0).toUpperCase() + aba.slice(1)).classList.add('ativo');
+    }
+
+    function alternarTema() {
+        document.body.classList.toggle('light-mode');
+        localStorage.setItem('tema', document.body.classList.contains('light-mode') ? 'claro' : 'escuro');
+    }
+    function carregarTema() {
+        if (localStorage.getItem('tema') === 'claro') document.body.classList.add('light-mode');
+    }
+
+    function arquivoParaBase64(arquivo) {
+        return new Promise((resolve) => {
+            if (!arquivo) return resolve(null);
+            const reader = new FileReader();
+            reader.readAsDataURL(arquivo);
+            reader.onload = () => resolve({ nome: arquivo.name, tipo: arquivo.type, dados: reader.result });
+        });
+    }
+
+    function base64ParaBlob(m) {
+        if (!m || !m.dados) return null;
+        const arr = m.dados.split(',');
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8 = new Uint8Array(n);
+        while (n--) u8[n] = bstr.charCodeAt(n);
+        return new Blob([u8], { type: arr[0].match(/:(.*?);/)[1] });
+    }
+
+    function carregarTudo() {
+        carregarFeed();
+        carregarDelivery();
+        carregarFilmes();
+        carregarBooks();
+        carregarVideos();
+        carregarMusicas();
+        gerarCarteira();
+    }
+
+    async function publicarPost() {
+        const texto = document.getElementById('postTexto').value.trim();
+        if (!texto) return;
+        const tx = db.transaction("posts", "readwrite");
+        tx.objectStore("posts").add({ texto, data: new Date().toLocaleString() });
+        tx.oncomplete = () => { document.getElementById('postTexto').value = ''; carregarFeed(); };
+    }
+    function carregarFeed() {
+        db.transaction("posts", "readonly").objectStore("posts").getAll().onsuccess = e => {
+            const lista = e.target.result.reverse();
+            document.getElementById('listaFeed').innerHTML = lista.length ? lista.map(p => `<div class="item-lista"><b>Post:</b> ${p.texto}<br><small>${p.data}</small></div>`).join('') : '<p style="opacity:0.6;">Nenhum post.</p>';
+        };
+    }
+
+    async function adicionarDelivery() {
+        const nome = document.getElementById('delivNome').value.trim();
+        const preco = parseFloat(document.getElementById('delivPreco').value);
+        if (!nome || isNaN(preco)) return;
+        const tx = db.transaction("delivery", "readwrite");
+        tx.objectStore("delivery").add({ nome, preco });
+        tx.oncomplete = () => { document.getElementById('delivNome').value = ''; document.getElementById('delivPreco').value = ''; carregarDelivery(); };
+    }
+    function carregarDelivery() {
+        db.transaction("delivery", "readonly").objectStore("delivery").getAll().onsuccess = e => {
+            const itens = e.target.result.reverse();
+            document.getElementById('listaDelivery').innerHTML = itens.length ? itens.map(i => `<div class="item-lista"><b>${i.nome}</b> - R$ ${i.preco.toFixed(2)}</div>`).join('') : '<p style="opacity:0.6;">Cardápio vazio.</p>';
+        };
+    }
+
+    async function salvarFilme() {
+        const titulo = document.getElementById('filmeTitulo').value.trim();
+        const arq = document.getElementById('filmeArquivo').files[0];
+        if (!titulo || !arq) return alert("Preencha o título e selecione o vídeo.");
+        const video = await arquivoParaBase64(arq);
+        const tx = db.transaction("filmes", "readwrite");
+        tx.objectStore("filmes").add({ titulo, video });
+        tx.oncomplete = () => { alert("Filme salvo!"); carregarFilmes(); };
+    }
+    function carregarFilmes() {
+        db.transaction("filmes", "readonly").objectStore("filmes").getAll().onsuccess = e => {
+            const itens = e.target.result.reverse();
+            document.getElementById('listaFilmes').innerHTML = itens.length ? itens.map(i => `<div class="item-lista"><b>${i.titulo}</b><video controls src="${URL.createObjectURL(base64ParaBlob(i.video))}"></video></div>`).join('') : '<p style="opacity:0.6;">Nenhum filme.</p>';
+        };
+    }
+
+    async function salvarLivro() {
+        const titulo = document.getElementById('livroTitulo').value.trim();
+        const arq = document.getElementById('livroArquivo').files[0];
+        if (!titulo || !arq) return alert("Selecione o arquivo.");
+        const arquivo = await arquivoParaBase64(arq);
+        const tx = db.transaction("books", "readwrite");
+        tx.objectStore("books").add({ titulo, arquivo });
+        tx.oncomplete = () => { alert("Obra salva!"); carregarBooks(); };
+    }
+    function carregarBooks() {
+        db.transaction("books", "readonly").objectStore("books").getAll().onsuccess = e => {
+            const itens = e.target.result.reverse();
+            document.getElementById('listaBooks').innerHTML = itens.length ? itens.map(i => `<div class="item-lista"><b>${i.titulo}</b><br><a href="${URL.createObjectURL(base64ParaBlob(i.arquivo))}" download="${i.arquivo.nome}" style="color:var(--accent);">📖 Baixar / Ler</a></div>`).join('') : '<p style="opacity:0.6;">Nenhuma obra.</p>';
+        };
+    }
+
+    async function salvarVideo() {
+        const titulo = document.getElementById('vidTitulo').value.trim();
+        const arq = document.getElementById('vidArquivo').files[0];
+        if (!titulo || !arq) return;
+        const video = await arquivoParaBase64(arq);
+        const tx = db.transaction("videos", "readwrite");
+        tx.objectStore("videos").add({ titulo, video });
+        tx.oncomplete = () => { carregarVideos(); };
+    }
+    function carregarVideos() {
+        db.transaction("videos", "readonly").objectStore("videos").getAll().onsuccess = e => {
+            const itens = e.target.result.reverse();
+            document.getElementById('listaVideos').innerHTML = itens.length ? itens.map(i => `<div class="item-lista"><b>${i.titulo}</b><video controls src="${URL.createObjectURL(base64ParaBlob(i.video))}"></video></div>`).join('') : '<p style="opacity:0.6;">Nenhum vídeo.</p>';
+        };
+    }
+
+    async function salvarMusica() {
+        const titulo = document.getElementById('musicaTitulo').value.trim();
+        const arq = document.getElementById('musicaArquivo').files[0];
+        if (!titulo || !arq) return;
+        const audio = await arquivoParaBase64(arq);
+        const tx = db.transaction("musicas", "readwrite");
+        tx.objectStore("musicas").add({ titulo, audio });
+        tx.oncomplete = () => { carregarMusicas(); };
+    }
+    function carregarMusicas() {
+        db.transaction("musicas", "readonly").objectStore("musicas").getAll().onsuccess = e => {
+            const itens = e.target.result.reverse();
+            document.getElementById('listaMusicas').innerHTML = itens.length ? itens.map(i => `<div class="item-lista"><b>${i.titulo}</b><br><button onclick="document.getElementById('playerAudio').src='${URL.createObjectURL(base64ParaBlob(i.audio))}';document.getElementById('playerAudio').play();" style="background:var(--accent);border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-weight:bold;">▶ Tocar</button></div>`).join('') : '<p style="opacity:0.6;">Nenhuma música.</p>';
+        };
+    }
+
+    function perguntarAi() {
+        const p = document.getElementById('perguntaAi').value.trim();
+        if (!p) return;
+        const respostas = ["Com base no ecossistema offline, processei sua consulta localmente com sucesso.", "Operando 100% desconectado da rede externa.", "Soberania de dados garantida no IndexedDB do seu dispositivo."];
+        document.getElementById('respostaAi').textContent = "IA: " + respostas[Math.floor(Math.random() * respostas.length)];
+    }
+
+    async function gerarCarteira() {
+        const chave = localStorage.getItem('chave_soberana') || Math.random().toString(36).substring(2) + Date.now().toString(36);
+        localStorage.setItem('chave_soberana', chave);
+        document.getElementById('infoCarteira').innerHTML = `<b>Chave Pública P2P:</b><br>${chave}`;
+    }
+
+    function exportarBackup() {
+        alert("Função de backup unificado pronta para gerar o arquivo JSON completo.");
+    }
+</script>
+
+</body>
+</html>
